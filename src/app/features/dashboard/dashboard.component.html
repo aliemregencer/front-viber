@@ -1,13 +1,37 @@
-<div class="flex flex-col md:flex-row gap-2 mb-4">
-  <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Karakter ara..."
-    class="p-2 border rounded w-full md:w-1/2" />
+<div class="flex flex-col md:flex-row gap-4 mb-6">
 
+  <!-- Arama -->
+  <div class="flex flex-col w-full md:w-1/2">
+    <label for="search" class="text-sm text-gray-600 mb-1">Karakter Ara</label>
+    <input id="search" type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
+      placeholder="Karakter ara..." class="p-2 border rounded" />
 
-  <select [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)" class="p-2 border rounded w-full md:w-1/4">
-    <option value="asc">A → Z</option>
-    <option value="desc">Z → A</option>
-  </select>
+  </div>
+
+  <!-- Sıralama -->
+  <div class="flex flex-col w-full md:w-1/4">
+    <label for="sort" class="text-sm text-gray-600 mb-1">Sıralama</label>
+    <select id="sort" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)" class="p-2 border rounded">
+      <option value="asc">A → Z</option>
+      <option value="desc">Z → A</option>
+    </select>
+  </div>
+
+  <!-- Cinsiyet -->
+  <div class="flex flex-col w-full md:w-1/4">
+    <label for="gender" class="text-sm text-gray-600 mb-1">Cinsiyet</label>
+    <select id="gender" [ngModel]="genderFilter()" (ngModelChange)="genderFilter.set($event)"
+      class="p-2 border rounded">
+      <option value="all">Tümü</option>
+      <option value="male">Erkek</option>
+      <option value="female">Kadın</option>
+      <option value="other">Diğer</option>
+    </select>
+  </div>
+
 </div>
+
+
 
 
 

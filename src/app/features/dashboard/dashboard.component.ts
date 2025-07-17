@@ -15,6 +15,9 @@ export class DashboardComponent implements OnInit {
   loading = signal(true);
   error = signal<string | null>(null);
   searchQuery = signal('');
+  genderFilter = signal<'all' | 'male' | 'female' | 'other'>('all');
+
+
 
   constructor(private futuramaService: FuturamaService) { }
 
@@ -38,21 +41,28 @@ export class DashboardComponent implements OnInit {
 
   get filteredCharacters() {
     const query = this.searchQuery().toLowerCase();
+    const gender = this.genderFilter();
 
-    return this.characters()
-      .filter((karakter) => {
-        const fullName = `${karakter.name?.first ?? ''} ${karakter.name?.last ?? ''}`.toLowerCase();
-        return fullName.includes(query);
-      })
-      .sort((a, b) => {
-        const aName = `${a.name?.first ?? ''} ${a.name?.last ?? ''}`.toLowerCase();
-        const bName = `${b.name?.first ?? ''} ${b.name?.last ?? ''}`.toLowerCase();
+    const filtered = this.characters().filter((karakter) => {
+      const fullName = `${karakter.name?.first ?? ''} ${karakter.name?.last ?? ''}`.toLowerCase();
+      const matchesName = fullName.includes(query);
 
-        return this.sortOrder() === 'asc'
-          ? aName.localeCompare(bName)
-          : bName.localeCompare(aName);
-      });
+      const matchesGender =
+        gender === 'all' || (karakter.gender?.toLowerCase() === gender);
+
+      return matchesName && matchesGender;
+    });
+
+    return filtered.sort((a, b) => {
+      const aName = `${a.name?.first ?? ''} ${a.name?.last ?? ''}`.toLowerCase();
+      const bName = `${b.name?.first ?? ''} ${b.name?.last ?? ''}`.toLowerCase();
+
+      return this.sortOrder() === 'asc'
+        ? aName.localeCompare(bName)
+        : bName.localeCompare(aName);
+    });
   }
+
 
 
 }
