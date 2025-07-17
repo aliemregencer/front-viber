@@ -1,1 +1,44 @@
-<p>dashboard works!</p>
+<div class="flex flex-col md:flex-row gap-2 mb-4">
+  <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Karakter ara..."
+    class="p-2 border rounded w-full md:w-1/2" />
+
+
+  <select [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)" class="p-2 border rounded w-full md:w-1/4">
+    <option value="asc">A → Z</option>
+    <option value="desc">Z → A</option>
+  </select>
+</div>
+
+
+
+<section class="p-6">
+  <h1 class="text-2xl font-bold mb-4">Futurama Karakterleri</h1>
+
+  <p *ngIf="loading()" class="text-gray-500">Yükleniyor...</p>
+
+  <p *ngIf="!loading() && error()" class="text-red-500">
+    Hata: {{ error() }}
+  </p>
+
+  <p *ngIf="!loading() && !error() && filteredCharacters.length === 0" class="text-gray-500">
+    Hiç karakter bulunamadı.
+  </p>
+
+  <div *ngIf="!loading() && !error() && filteredCharacters.length > 0"
+    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+    <div *ngFor="let karakter of filteredCharacters; trackBy: trackById"
+      class="bg-white shadow-md rounded-md overflow-hidden">
+      <img [src]="karakter.images?.main" [alt]="karakter.name?.first" class="w-full h-48 object-cover" />
+      <div class="p-4">
+        <h2 class="font-semibold">
+          {{ karakter.name?.first }} {{ karakter.name?.last }}
+        </h2>
+        <p class="text-sm text-gray-600">{{ karakter.gender }}</p>
+      </div>
+    </div>
+
+  </div>
+
+
+</section>
