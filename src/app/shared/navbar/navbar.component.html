@@ -1,17 +1,83 @@
-<nav class="bg-gray-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-  <div class="text-xl font-bold cursor-pointer hover:text-blue-300 transition-colors" routerLink="/characters">Characters</div>
-  <ul class="flex space-x-4">
-    <li>
-      <a routerLink="/dashboard" routerLinkActive="text-blue-400" class="hover:text-blue-300 transition-colors">Dashboard</a>
-    </li>
-    <li>
-      <a routerLink="/analytics" routerLinkActive="text-blue-400" class="hover:text-blue-300 transition-colors">Analytics</a>
-    </li>
-    <li>
-      <a routerLink="/reports" routerLinkActive="text-blue-400" class="hover:text-blue-300 transition-colors">Reports</a>
-    </li>
-    <li>
-      <a routerLink="/create-character" routerLinkActive="text-blue-400" class="hover:text-blue-300 transition-colors bg-blue-600 px-3 py-1 rounded">Yeni Karakter Ekle</a>
-    </li>
-  </ul>
+<nav class="bg-gray-900 text-white shadow-md">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- Logo/Brand -->
+      <div class="flex-shrink-0">
+        <div class="text-lg sm:text-xl font-bold cursor-pointer hover:text-blue-300 transition-colors" routerLink="/characters">
+          <span class="hidden sm:inline">Futurama Characters</span>
+          <span class="sm:hidden">Characters</span>
+        </div>
+      </div>
+
+      <!-- Desktop Menu -->
+      <div class="hidden md:block">
+        <ul class="flex space-x-4 lg:space-x-6">
+          <li>
+            <a routerLink="/dashboard" routerLinkActive="text-blue-400"
+               class="hover:text-blue-300 transition-colors px-3 py-2 rounded-md text-sm font-medium">
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a routerLink="/analytics" routerLinkActive="text-blue-400"
+               class="hover:text-blue-300 transition-colors px-3 py-2 rounded-md text-sm font-medium">
+              Analytics
+            </a>
+          </li>
+          <li>
+            <a routerLink="/reports" routerLinkActive="text-blue-400"
+               class="hover:text-blue-300 transition-colors px-3 py-2 rounded-md text-sm font-medium">
+              Reports
+            </a>
+          </li>
+          <li>
+            <a routerLink="/create-character" routerLinkActive="text-blue-400"
+               class="hover:text-blue-300 transition-colors bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
+              <span class="hidden lg:inline">Yeni Karakter Ekle</span>
+              <span class="lg:hidden">Yeni Karakter</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Mobile menu button -->
+      <div class="md:hidden">
+        <button (click)="toggleMenu()"
+                class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                [attr.aria-expanded]="isMenuOpen">
+          <span class="sr-only">Open main menu</span>
+          <!-- Hamburger icon -->
+          <svg class="h-6 w-6" [class.hidden]="isMenuOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <!-- Close icon -->
+          <svg class="h-6 w-6" [class.hidden]="!isMenuOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="md:hidden" [class.hidden]="!isMenuOpen">
+    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-800">
+      <a routerLink="/dashboard" routerLinkActive="bg-gray-900 text-white" (click)="closeMenu()"
+         class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+        Dashboard
+      </a>
+      <a routerLink="/analytics" routerLinkActive="bg-gray-900 text-white" (click)="closeMenu()"
+         class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+        Analytics
+      </a>
+      <a routerLink="/reports" routerLinkActive="bg-gray-900 text-white" (click)="closeMenu()"
+         class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
+        Reports
+      </a>
+      <a routerLink="/create-character" routerLinkActive="bg-blue-800" (click)="closeMenu()"
+         class="bg-blue-600 text-white hover:bg-blue-700 block px-3 py-2 rounded-md text-base font-medium">
+        Yeni Karakter Ekle
+      </a>
+    </div>
+  </div>
 </nav>

@@ -1,7 +1,7 @@
-<div class="search-filter-container p-6 bg-white rounded-lg shadow-md mb-6">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+<div class="search-filter-container p-4 sm:p-6 bg-white rounded-lg shadow-md mb-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
     <!-- Search Input -->
-    <div class="lg:col-span-2">
+    <div class="sm:col-span-2 lg:col-span-2">
       <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
         Search Characters
       </label>
@@ -11,7 +11,7 @@
         [(ngModel)]="searchTerm"
         (input)="onSearchChange($event)"
         placeholder="Search by name, occupation..."
-        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       />
     </div>
 
@@ -24,7 +24,7 @@
         id="gender"
         [(ngModel)]="genderFilter"
         (change)="onGenderFilterChange($event)"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
         <option value="">All Genders</option>
         <option *ngFor="let gender of genderOptions" [value]="gender">{{ gender }}</option>
@@ -40,7 +40,7 @@
         id="species"
         [(ngModel)]="speciesFilter"
         (change)="onSpeciesFilterChange($event)"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
         <option value="">All Species</option>
         <option *ngFor="let species of speciesOptions" [value]="species">{{ species }}</option>
@@ -56,7 +56,7 @@
         id="sort"
         [(ngModel)]="sortBy"
         (change)="onSortChange($event)"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
         <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
       </select>
@@ -64,10 +64,10 @@
   </div>
 
   <!-- Clear Filters Button -->
-  <div class="mt-4 flex justify-end">
+  <div class="mt-4 flex justify-center sm:justify-end">
     <button
       (click)="clearFilters()"
-      class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors duration-200"
+      class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors duration-200 w-full sm:w-auto"
     >
       Clear All Filters
     </button>

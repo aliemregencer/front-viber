@@ -1,11 +1,11 @@
-<div class="container mx-auto px-4 py-8 max-w-4xl">
-  <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center">Yeni Karakter Oluştur</h1>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-4xl">
+  <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8 text-center">Yeni Karakter Oluştur</h1>
 
   <!-- Progress Bar -->
-  <div class="mb-8">
+  <div class="mb-6 sm:mb-8">
     <div class="flex justify-between items-center mb-2">
-      <span class="text-sm font-medium text-gray-600">Adım {{ currentStep }} / {{ totalSteps }}</span>
-      <span class="text-sm font-medium text-gray-600">{{ getProgress() | number:'1.0-0' }}%</span>
+      <span class="text-xs sm:text-sm font-medium text-gray-600">Adım {{ currentStep }} / {{ totalSteps }}</span>
+      <span class="text-xs sm:text-sm font-medium text-gray-600">{{ getProgress() | number:'1.0-0' }}%</span>
     </div>
     <div class="w-full bg-gray-200 rounded-full h-2">
       <div class="bg-blue-600 h-2 rounded-full transition-all duration-300"
@@ -17,11 +17,11 @@
       <div *ngFor="let step of [1, 2, 3]; let i = index"
            class="flex flex-col items-center cursor-pointer"
            (click)="goToStep(step)">
-        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors"
+        <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium transition-colors"
              [class]="currentStep >= step ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'">
           {{ step }}
         </div>
-        <span class="text-xs mt-1 text-gray-600">
+        <span class="text-xs mt-1 text-gray-600 text-center">
           {{ step === 1 ? 'Temel' : step === 2 ? 'Fiziksel' : 'Ek Bilgiler' }}
         </span>
       </div>
@@ -29,14 +29,14 @@
   </div>
 
   <!-- Form Container -->
-  <div class="bg-white rounded-lg shadow-lg p-8">
+  <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
 
     <!-- Step 1: Basic Information -->
-    <div *ngIf="currentStep === 1" class="space-y-6">
-      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Temel Bilgiler</h2>
+    <div *ngIf="currentStep === 1" class="space-y-4 sm:space-y-6">
+      <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">Temel Bilgiler</h2>
 
-      <form [formGroup]="step1Form" class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form [formGroup]="step1Form" class="space-y-4 sm:space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <!-- First Name -->
           <div>
             <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
@@ -46,7 +46,7 @@
               type="text"
               id="firstName"
               formControlName="firstName"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               [class.border-red-500]="isFieldInvalid(step1Form, 'firstName')"
               placeholder="Karakterin adı">
             <div *ngIf="isFieldInvalid(step1Form, 'firstName')"
@@ -64,7 +64,7 @@
               type="text"
               id="lastName"
               formControlName="lastName"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               [class.border-red-500]="isFieldInvalid(step1Form, 'lastName')"
               placeholder="Karakterin soyadı">
             <div *ngIf="isFieldInvalid(step1Form, 'lastName')"
@@ -74,7 +74,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <!-- Species -->
           <div>
             <label for="species" class="block text-sm font-medium text-gray-700 mb-2">
@@ -83,7 +83,7 @@
             <select
               id="species"
               formControlName="species"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               [class.border-red-500]="isFieldInvalid(step1Form, 'species')">
               <option value="">Tür seçin</option>
               <option *ngFor="let species of speciesOptions" [value]="species">{{ species }}</option>
@@ -102,7 +102,7 @@
             <select
               id="gender"
               formControlName="gender"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               [class.border-red-500]="isFieldInvalid(step1Form, 'gender')">
               <option value="">Cinsiyet seçin</option>
               <option *ngFor="let gender of genderOptions" [value]="gender">{{ gender }}</option>
@@ -403,30 +403,33 @@
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="flex justify-between mt-8 pt-6 border-t border-gray-200">
+    <div class="flex flex-col sm:flex-row justify-between mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 gap-3 sm:gap-0">
       <button
         type="button"
         (click)="previousStep()"
         [disabled]="currentStep === 1"
-        class="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-        ← Geri
+        class="w-full sm:w-auto px-4 sm:px-6 py-2 border border-gray-300 text-gray-700 text-sm sm:text-base rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors order-2 sm:order-1">
+        <span class="hidden sm:inline">← Geri</span>
+        <span class="sm:hidden">Geri</span>
       </button>
 
-      <div class="flex gap-3">
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 order-1 sm:order-2">
         <button
           *ngIf="currentStep < totalSteps"
           type="button"
           (click)="nextStep()"
-          class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-          İleri →
+          class="w-full sm:w-auto px-4 sm:px-6 py-2 bg-blue-600 text-white text-sm sm:text-base rounded-md hover:bg-blue-700 transition-colors">
+          <span class="hidden sm:inline">İleri →</span>
+          <span class="sm:hidden">İleri</span>
         </button>
 
         <button
           *ngIf="currentStep === totalSteps"
           type="button"
           (click)="onSubmit()"
-          class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-          Karakteri Oluştur
+          class="w-full sm:w-auto px-4 sm:px-6 py-2 bg-green-600 text-white text-sm sm:text-base rounded-md hover:bg-green-700 transition-colors">
+          <span class="hidden sm:inline">Karakteri Oluştur</span>
+          <span class="sm:hidden">Oluştur</span>
         </button>
       </div>
     </div>
