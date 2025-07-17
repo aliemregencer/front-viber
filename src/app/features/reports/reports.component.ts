@@ -5,7 +5,6 @@ import { takeUntil } from 'rxjs/operators';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
 
 Chart.register(...registerables);
@@ -80,7 +79,7 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
     deselectAll: { tr: 'Tümünü Kaldır', en: 'Deselect All' },
     generateReport: { tr: 'Rapor Oluştur', en: 'Generate Report' },
     downloadPDF: { tr: 'PDF İndir', en: 'Download PDF' },
-    downloadDOCX: { tr: 'DOCX İndir', en: 'Download DOCX' },
+    downloadDOCX: { tr: 'Word İndir', en: 'Download Word' },
     loadLastReport: { tr: 'Son Raporu Yükle', en: 'Load Last Report' }
   };
 
@@ -257,11 +256,36 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
     };
   }
 
+  private getColorsForLabels(labels: string[]): string[] {
+    const colors: string[] = [];
+
+    for (const label of labels) {
+      if (this.dataType === 'gender') {
+        // Gender-specific colors: Male = Blue, Female = Pink
+        if (label.toLowerCase() === 'male' || label.toLowerCase() === 'erkek') {
+          colors.push('#2196F3'); // Blue for male
+        } else if (label.toLowerCase() === 'female' || label.toLowerCase() === 'kadın') {
+          colors.push('#E91E63'); // Pink for female
+        } else {
+          colors.push('#9E9E9E'); // Gray for unknown
+        }
+      } else {
+        // Default colors for other data types
+        const defaultColors = [
+          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+          '#FF9F40', '#FF8C00', '#C9CBCF', '#32CD32', '#FF1493'
+        ];
+        const index = labels.indexOf(label);
+        colors.push(defaultColors[index % defaultColors.length]);
+      }
+    }
+
+    return colors;
+  }
+
   private getChartConfig(data: { labels: string[], data: number[] }): ChartConfiguration {
-    const colors = [
-      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-      '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
-    ];
+    // Get colors based on data type and labels
+    const backgroundColor = this.getColorsForLabels(data.labels);
 
     const baseConfig: ChartConfiguration = {
       type: this.chartType as ChartType,
@@ -270,8 +294,8 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
         datasets: [{
           label: this.t(this.dataType),
           data: data.data,
-          backgroundColor: colors.slice(0, data.labels.length),
-          borderColor: colors.slice(0, data.labels.length),
+          backgroundColor: backgroundColor,
+          borderColor: backgroundColor,
           borderWidth: 1
         }]
       },
@@ -324,6 +348,20 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
     return '';
   }
 
+  // Helper method to format date safely
+  private getFormattedDate(date: Date | string): string {
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+        return dateObj.toLocaleDateString(this.language === 'tr' ? 'tr-TR' : 'en-US');
+      }
+      return new Date().toLocaleDateString(this.language === 'tr' ? 'tr-TR' : 'en-US');
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return new Date().toLocaleDateString(this.language === 'tr' ? 'tr-TR' : 'en-US');
+    }
+  }
+
   // Translation helper
   t(key: string): string {
     return this.translations[key]?.[this.language] || key;
@@ -359,7 +397,12 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
           this.chartType = data.chartType;
           this.dataType = data.dataType;
           this.language = data.language;
-          this.reportData = data;
+
+          // Ensure generatedAt is a proper Date object
+          this.reportData = {
+            ...data,
+            generatedAt: typeof data.generatedAt === 'string' ? new Date(data.generatedAt) : data.generatedAt
+          };
           this.reportGenerated = true;
 
           if (this.chartInitialized) {
@@ -418,149 +461,72 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  // DOCX Download
+  // DOCX Download - Alternative approach using HTML to RTF
   async downloadDOCX() {
     if (!this.reportData) {
+      alert('Önce rapor oluşturun');
       return;
     }
 
     try {
-      const doc = new Document({
-        sections: [{
-          properties: {},
-          children: [
-            // Title
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: this.t('title'),
-                  bold: true,
-                  size: 32
-                })
-              ],
-              heading: HeadingLevel.TITLE,
-              alignment: AlignmentType.CENTER
-            }),
+      // Create RTF content (Rich Text Format) which can be opened by Word
+      const rtfContent = this.generateRTFContent();
 
-            // Generated date
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: `${this.t('generatedAt')}: ${this.reportData.generatedAt.toLocaleDateString(this.language === 'tr' ? 'tr-TR' : 'en-US')}`,
-                  italics: true
-                })
-              ],
-              alignment: AlignmentType.CENTER
-            }),
-
-            // Empty line
-            new Paragraph({ children: [] }),
-
-            // Selected characters section
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: this.t('selectedCharacters'),
-                  bold: true,
-                  size: 24
-                })
-              ],
-              heading: HeadingLevel.HEADING_1
-            }),
-
-            // Characters list
-            ...this.reportData.selectedCharacters.map(char =>
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `• ${char.name.first} ${char.name.last} - ${char.species} - ${char.occupation} - ${char.homePlanet}`,
-                  })
-                ]
-              })
-            ),
-
-            // Empty line
-            new Paragraph({ children: [] }),
-
-            // Chart section (if available)
-            ...(this.getChartImage() ? [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `${this.t('distribution')} - ${this.t(this.dataType)}`,
-                    bold: true,
-                    size: 24
-                  })
-                ],
-                heading: HeadingLevel.HEADING_1
-              }),
-
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `[${this.t('distribution')} ${this.t('chart')} - ${this.chartType.toUpperCase()}]`,
-                    italics: true
-                  })
-                ]
-              }),
-
-              // Empty line
-              new Paragraph({ children: [] })
-            ] : []),
-
-            // Analysis section
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: this.t('analysis'),
-                  bold: true,
-                  size: 24
-                })
-              ],
-              heading: HeadingLevel.HEADING_1
-            }),
-
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: this.generateAnalysisText()
-                })
-              ]
-            }),
-
-            // Empty line
-            new Paragraph({ children: [] }),
-
-            // References section
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: this.t('references'),
-                  bold: true,
-                  size: 24
-                })
-              ],
-              heading: HeadingLevel.HEADING_1
-            }),
-
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: 'Futurama Character Database. (2024). Retrieved from https://api.sampleapis.com/futurama/characters'
-                })
-              ]
-            })
-          ]
-        }]
+      const fileName = `character-report-${new Date().toISOString().split('T')[0]}.rtf`;
+      const blob = new Blob([rtfContent], {
+        type: 'application/rtf'
       });
 
-      const buffer = await Packer.toBuffer(doc);
-      const fileName = `character-report-${new Date().toISOString().split('T')[0]}.docx`;
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       saveAs(blob, fileName);
     } catch (error) {
-      console.error('DOCX generation error:', error);
+      console.error('RTF generation error:', error);
+
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
+      console.error('Error details:', errorMessage);
+      alert('Dosya oluşturulurken hata oluştu: ' + errorMessage);
     }
+  }
+
+  // Generate RTF content that can be opened by Microsoft Word
+  private generateRTFContent(): string {
+    const date = this.getFormattedDate(this.reportData!.generatedAt);
+
+    let rtf = '{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}';
+
+    // Title
+    rtf += '\\f0\\fs28\\b ' + this.t('title') + '\\b0\\par\\par';
+
+    // Generated date
+    rtf += '\\fs20\\i ' + this.t('generatedAt') + ': ' + date + '\\i0\\par\\par';
+
+    // Selected characters section
+    rtf += '\\fs24\\b ' + this.t('selectedCharacters') + ' (' + this.selectedCharacters.length + ')\\b0\\par';
+
+    // Characters list
+    this.reportData!.selectedCharacters.forEach(char => {
+      rtf += '\\bullet ' + char.name.first + ' ' + char.name.last + ' - ' +
+             char.species + ' - ' + char.occupation + ' - ' + char.homePlanet + '\\par';
+    });
+
+    rtf += '\\par';
+
+    // Chart info (if available)
+    if (this.getChartImage()) {
+      rtf += '\\fs24\\b ' + this.t('distribution') + ' - ' + this.t(this.dataType) + '\\b0\\par';
+      rtf += '[' + this.t('distribution') + ' ' + this.t('chart') + ' - ' + this.chartType.toUpperCase() + ']\\par\\par';
+    }
+
+    // Analysis section
+    rtf += '\\fs24\\b ' + this.t('analysis') + '\\b0\\par';
+    rtf += this.generateAnalysisText() + '\\par\\par';
+
+    // References section
+    rtf += '\\fs24\\b ' + this.t('references') + '\\b0\\par';
+    rtf += 'Futurama Character Database. (2024). Retrieved from https://api.sampleapis.com/futurama/characters\\par';
+
+    rtf += '}';
+
+    return rtf;
   }
 
   // Analysis text generation

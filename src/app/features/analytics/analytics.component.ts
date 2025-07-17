@@ -154,17 +154,43 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
     return { labels, values };
   }
 
+  private getColorsForLabels(labels: string[]): string[] {
+    const colors: string[] = [];
+
+    for (const label of labels) {
+      if (this.selectedDataType === 'gender') {
+        // Gender-specific colors: Male = Blue, Female = Pink
+        if (label.toLowerCase() === 'male' || label.toLowerCase() === 'erkek') {
+          colors.push('#2196F3'); // Blue for male
+        } else if (label.toLowerCase() === 'female' || label.toLowerCase() === 'kadın') {
+          colors.push('#E91E63'); // Pink for female
+        } else {
+          colors.push('#9E9E9E'); // Gray for unknown
+        }
+      } else {
+        // Default colors for other data types
+        const defaultColors = [
+          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+          '#FF9F40', '#FF8C00', '#C9CBCF', '#32CD32', '#FF1493'
+        ];
+        const index = labels.indexOf(label);
+        colors.push(defaultColors[index % defaultColors.length]);
+      }
+    }
+
+    return colors;
+  }
+
   private getChartConfig(data: { labels: string[], values: number[] }): ChartConfiguration {
-    const colors = [
-      '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-      '#FF9F40', '#FF8C00', '#C9CBCF', '#32CD32', '#FF1493'
-    ];
+    // Get colors based on data type and labels
+    const backgroundColor = this.getColorsForLabels(data.labels);
+    const borderColor = backgroundColor;
 
     const dataset: any = {
       label: this.getDataTypeLabel(),
       data: data.values,
-      backgroundColor: colors.slice(0, data.labels.length),
-      borderColor: colors.slice(0, data.labels.length),
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
       borderWidth: 1
     };
 
@@ -172,8 +198,8 @@ export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.selectedChartType === 'line') {
       dataset.fill = false;
       dataset.tension = 0.1;
-      dataset.backgroundColor = colors[0];
-      dataset.borderColor = colors[0];
+      dataset.backgroundColor = backgroundColor[0];
+      dataset.borderColor = borderColor[0];
     }
 
     const baseConfig: ChartConfiguration = {
