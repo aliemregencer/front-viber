@@ -1,17 +1,16 @@
 <div class="flex flex-col md:flex-row gap-4 mb-6">
-
   <!-- Arama -->
   <div class="flex flex-col w-full md:w-1/2">
     <label for="search" class="text-sm text-gray-600 mb-1">Karakter Ara</label>
-    <input id="search" type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
+    <input id="search" type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); currentPage = 1"
       placeholder="Karakter ara..." class="p-2 border rounded" />
-
   </div>
 
   <!-- Sıralama -->
   <div class="flex flex-col w-full md:w-1/4">
     <label for="sort" class="text-sm text-gray-600 mb-1">Sıralama</label>
-    <select id="sort" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event)" class="p-2 border rounded">
+    <select id="sort" [ngModel]="sortOrder()" (ngModelChange)="sortOrder.set($event); currentPage = 1"
+      class="p-2 border rounded">
       <option value="asc">A → Z</option>
       <option value="desc">Z → A</option>
     </select>
@@ -20,7 +19,7 @@
   <!-- Cinsiyet -->
   <div class="flex flex-col w-full md:w-1/4">
     <label for="gender" class="text-sm text-gray-600 mb-1">Cinsiyet</label>
-    <select id="gender" [ngModel]="genderFilter()" (ngModelChange)="genderFilter.set($event)"
+    <select id="gender" [ngModel]="genderFilter()" (ngModelChange)="genderFilter.set($event); currentPage = 1"
       class="p-2 border rounded">
       <option value="all">Tümü</option>
       <option value="male">Erkek</option>
@@ -28,41 +27,38 @@
       <option value="other">Diğer</option>
     </select>
   </div>
-
 </div>
-
-
-
-
 
 <section class="p-6">
   <h1 class="text-2xl font-bold mb-4">Futurama Karakterleri</h1>
 
   <p *ngIf="loading()" class="text-gray-500">Yükleniyor...</p>
-
-  <p *ngIf="!loading() && error()" class="text-red-500">
-    Hata: {{ error() }}
-  </p>
-
+  <p *ngIf="!loading() && error()" class="text-red-500">Hata: {{ error() }}</p>
   <p *ngIf="!loading() && !error() && filteredCharacters.length === 0" class="text-gray-500">
     Hiç karakter bulunamadı.
   </p>
 
   <div *ngIf="!loading() && !error() && filteredCharacters.length > 0"
-    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+    <div
+      *ngFor="let karakter of filteredCharacters | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }; trackBy: trackById"
+      class="bg-white shadow-md rounded-md overflow-hidden flex flex-col h-[21rem]">
+      <img [src]="karakter.images?.main" [alt]="karakter.name?.first" class="w-full h-64 object-contain bg-white" />
 
-    <div *ngFor="let karakter of filteredCharacters; trackBy: trackById"
-      class="bg-white shadow-md rounded-md overflow-hidden">
-      <img [src]="karakter.images?.main" [alt]="karakter.name?.first" class="w-full h-48 object-cover" />
-      <div class="p-4">
-        <h2 class="font-semibold">
+      <div class="p-4 flex-grow flex flex-col justify-between">
+        <h2 class="font-semibold text-lg leading-snug">
           {{ karakter.name?.first }} {{ karakter.name?.last }}
         </h2>
-        <p class="text-sm text-gray-600">{{ karakter.gender }}</p>
+        <p class="text-sm text-gray-600 mt-2">{{ karakter.gender }}</p>
       </div>
     </div>
 
   </div>
 
-
+  <!-- Pagination -->
+  <div class="mt-6 flex justify-center">
+    <pagination-controls (pageChange)="currentPage = $event" [responsive]="true" [autoHide]="false" previousLabel=""
+      nextLabel="">
+    </pagination-controls>
+  </div>
 </section>

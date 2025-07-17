@@ -1,0 +1,6 @@
+::ng-deep .pagination-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 1rem;
+}
