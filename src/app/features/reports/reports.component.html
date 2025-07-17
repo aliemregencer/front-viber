@@ -121,8 +121,8 @@
         <div class="relative h-96 bg-gray-50 rounded-lg flex items-center justify-center">
           <canvas
             #chartCanvas
-            *ngIf="selectedCharacters.length > 0"
-            class="max-w-full max-h-full">
+            class="max-w-full max-h-full"
+            [style.display]="selectedCharacters.length > 0 ? 'block' : 'none'">
           </canvas>
           <div *ngIf="selectedCharacters.length === 0" class="text-gray-500 text-center">
             <div class="text-4xl mb-2">📊</div>
@@ -188,6 +188,14 @@
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Chart Section -->
+          <div class="mb-8" *ngIf="getChartImage()">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('distribution') }} - {{ t(dataType) }}</h2>
+            <div class="flex justify-center">
+              <img [src]="getChartImage()" alt="Chart" class="max-w-full h-auto border border-gray-200 rounded">
             </div>
           </div>
 

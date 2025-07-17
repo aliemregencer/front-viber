@@ -74,6 +74,7 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
     age: { tr: 'Yaş', en: 'Age' },
     totalCharacters: { tr: 'Toplam Karakter', en: 'Total Characters' },
     distribution: { tr: 'Dağılım', en: 'Distribution' },
+    chart: { tr: 'Grafik', en: 'Chart' },
     noCharactersSelected: { tr: 'Rapor oluşturmak için en az bir karakter seçin', en: 'Select at least one character to generate report' },
     selectAll: { tr: 'Tümünü Seç', en: 'Select All' },
     deselectAll: { tr: 'Tümünü Kaldır', en: 'Deselect All' },
@@ -139,8 +140,11 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
       this.selectedCharacters = this.selectedCharacters.filter(c => c.id !== character.id);
     }
 
-    if (this.chartInitialized && this.selectedCharacters.length > 0) {
-      this.updateChart();
+    if (this.chartInitialized) {
+      // Always call updateChart, it will handle empty state
+      setTimeout(() => {
+        this.updateChart();
+      }, 50);
     }
   }
 
@@ -150,54 +154,81 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   selectAllCharacters() {
     this.selectedCharacters = [...this.allCharacters];
-    if (this.chartInitialized && this.selectedCharacters.length > 0) {
-      this.updateChart();
+    if (this.chartInitialized) {
+      setTimeout(() => {
+        this.updateChart();
+      }, 50);
     }
   }
 
   deselectAllCharacters() {
     this.selectedCharacters = [];
-    if (this.chart) {
-      this.chart.destroy();
-      this.chart = null;
+    if (this.chartInitialized) {
+      setTimeout(() => {
+        this.updateChart();
+      }, 50);
     }
   }
 
   // Chart management
   onChartTypeChange() {
-    if (this.selectedCharacters.length > 0) {
-      this.updateChart();
+    if (this.chartInitialized) {
+      setTimeout(() => {
+        this.updateChart();
+      }, 50);
     }
   }
 
   onDataTypeChange() {
-    if (this.selectedCharacters.length > 0) {
-      this.updateChart();
+    if (this.chartInitialized) {
+      setTimeout(() => {
+        this.updateChart();
+      }, 50);
     }
   }
 
   updateChart() {
-    if (!this.chartInitialized || !this.chartCanvas || this.selectedCharacters.length === 0) {
+    if (!this.chartInitialized || !this.chartCanvas) {
       return;
     }
 
+    // Always destroy existing chart first
     if (this.chart) {
-      this.chart.destroy();
+      try {
+        this.chart.destroy();
+      } catch (error) {
+        console.error('Error destroying chart:', error);
+      }
       this.chart = null;
     }
 
-    const data = this.getChartData();
-    const config = this.getChartConfig(data);
+    // If no characters selected, just return (empty state)
+    if (this.selectedCharacters.length === 0) {
+      return;
+    }
 
     try {
+      const data = this.getChartData();
+
+      if (data.labels.length === 0 || data.data.length === 0) {
+        return;
+      }
+
+      const config = this.getChartConfig(data);
       this.chart = new Chart(this.chartCanvas.nativeElement, config);
     } catch (error) {
       console.error('Chart creation error:', error);
+      // Reset chart reference on error
+      this.chart = null;
     }
   }
 
   private getChartData() {
     const counts: Record<string, number> = {};
+
+    if (this.selectedCharacters.length === 0) {
+      return { labels: [], data: [] };
+    }
 
     this.selectedCharacters.forEach(char => {
       let value: string;
@@ -283,6 +314,14 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.reportGenerated = true;
     this.saveLastReport();
+  }
+
+  // Get chart as base64 image
+  getChartImage(): string {
+    if (this.chart && this.chartCanvas) {
+      return this.chart.toBase64Image();
+    }
+    return '';
   }
 
   // Translation helper
@@ -443,6 +482,32 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
             // Empty line
             new Paragraph({ children: [] }),
 
+            // Chart section (if available)
+            ...(this.getChartImage() ? [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${this.t('distribution')} - ${this.t(this.dataType)}`,
+                    bold: true,
+                    size: 24
+                  })
+                ],
+                heading: HeadingLevel.HEADING_1
+              }),
+
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `[${this.t('distribution')} ${this.t('chart')} - ${this.chartType.toUpperCase()}]`,
+                    italics: true
+                  })
+                ]
+              }),
+
+              // Empty line
+              new Paragraph({ children: [] })
+            ] : []),
+
             // Analysis section
             new Paragraph({
               children: [
@@ -491,7 +556,8 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
 
       const buffer = await Packer.toBuffer(doc);
       const fileName = `character-report-${new Date().toISOString().split('T')[0]}.docx`;
-      saveAs(new Blob([buffer]), fileName);
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      saveAs(blob, fileName);
     } catch (error) {
       console.error('DOCX generation error:', error);
     }
