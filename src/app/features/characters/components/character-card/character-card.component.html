@@ -1,0 +1,35 @@
+<div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col">
+  <!-- Character Image -->
+  <div class="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
+    <img 
+      *ngIf="character.images?.main; else noImage"
+      [src]="character.images.main" 
+      [alt]="getFullName()"
+      class="w-full h-full object-contain bg-white transition-transform duration-300 hover:scale-105"
+      (error)="onImageError($event)"
+    />
+    <ng-template #noImage>
+      <div class="text-gray-400 text-center">
+        <div class="text-6xl mb-2">👤</div>
+        <p class="text-sm">No Image</p>
+      </div>
+    </ng-template>
+  </div>
+  
+  <!-- Character Info -->
+  <div class="p-4 flex-1 flex flex-col">
+    <h3 class="text-lg font-bold text-gray-800 mb-3 line-clamp-2">{{ getFullName() }}</h3>
+    <div class="space-y-1 text-sm text-gray-600 flex-1">
+      <p><span class="font-medium text-gray-700">Yaş:</span> {{ character.age }}</p>
+      <p><span class="font-medium text-gray-700">Cinsiyet:</span> {{ character.gender }}</p>
+      <p><span class="font-medium text-gray-700">Tür:</span> {{ character.species }}</p>
+      <p><span class="font-medium text-gray-700">Meslek:</span> {{ character.occupation }}</p>
+      <p><span class="font-medium text-gray-700">Gezegen:</span> {{ character.homePlanet }}</p>
+    </div>
+    
+    <!-- Random Saying -->
+    <div *ngIf="character.sayings && character.sayings.length > 0" class="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-200">
+      <p class="text-xs italic text-blue-800 line-clamp-3">"{{ getRandomSaying() }}"</p>
+    </div>
+  </div>
+</div>

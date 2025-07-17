@@ -1,0 +1,36 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Search & Filter -->
+  <app-search-filter
+    (searchChange)="onSearch($event)"
+    (sortChange)="onSort($event)"
+    (genderFilterChange)="onGenderFilter($event)"
+    (speciesFilterChange)="onSpeciesFilter($event)">
+  </app-search-filter>
+
+  <!-- Loading State -->
+  <div *ngIf="loading$ | async" class="flex justify-center py-8">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error$ | async as error" 
+       class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{ error }}
+  </div>
+
+  <!-- Character Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <app-character-card
+      *ngFor="let character of ((filteredCharacters$ | async) || []) | paginate: { itemsPerPage: pageSize, currentPage: currentPage }; trackBy: trackByFn; let i = index"
+      [character]="character">
+    </app-character-card>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-center mt-8">
+    <pagination-controls
+      (pageChange)="onPageChange($event)"
+      class="pagination">
+    </pagination-controls>
+  </div>
+</div>
