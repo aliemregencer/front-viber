@@ -1,16 +1,212 @@
-<div class="container mx-auto px-4 py-8">
-  <h1 class="text-3xl font-bold text-gray-800 mb-8">Reports</h1>
+<div class="container mx-auto px-4 py-8 max-w-7xl">
+  <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center">{{ t('title') }}</h1>
 
-  <div class="bg-white rounded-lg shadow-md p-8 text-center">
-    <div class="text-6xl mb-4">📊</div>
-    <h2 class="text-2xl font-bold text-gray-700 mb-4">Rapor Özelliği Yakında</h2>
-    <p class="text-gray-600 mb-6">
-      Bu sayfada gelecekte PDF ve DOCX formatında raporlar oluşturabileceksiniz.
-    </p>
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <p class="text-blue-800 text-sm">
-        🚧 Bu özellik şu anda geliştirme aşamasındadır.
-      </p>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <span class="ml-3 text-gray-600">Karakterler yükleniyor...</span>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+    {{ error }}
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && !error" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Left Panel: Character Selection -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('selectedCharacters') }}</h2>
+
+        <!-- Language Selection -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Dil / Language</label>
+          <select
+            [(ngModel)]="language"
+            (change)="onLanguageChange()"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="tr">Türkçe</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+
+        <!-- Selection Controls -->
+        <div class="flex gap-2 mb-4">
+          <button
+            (click)="selectAllCharacters()"
+            class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+            {{ t('selectAll') }}
+          </button>
+          <button
+            (click)="deselectAllCharacters()"
+            class="flex-1 px-3 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors">
+            {{ t('deselectAll') }}
+          </button>
+        </div>
+
+        <!-- Load Last Report -->
+        <div *ngIf="hasLastReport()" class="mb-4">
+          <button
+            (click)="loadLastReport()"
+            class="w-full px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
+            {{ t('loadLastReport') }}
+          </button>
+        </div>
+
+        <!-- Character List -->
+        <div class="max-h-96 overflow-y-auto border border-gray-200 rounded">
+          <div *ngFor="let character of allCharacters"
+               class="flex items-center p-3 border-b border-gray-100 hover:bg-gray-50">
+            <input
+              type="checkbox"
+              [checked]="isCharacterSelected(character)"
+              (change)="onCharacterSelect(character, $any($event.target).checked)"
+              class="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <div class="flex-1">
+              <div class="font-medium text-gray-900">
+                {{ character.name.first }} {{ character.name.last }}
+              </div>
+              <div class="text-sm text-gray-500">
+                {{ character.species }} - {{ character.occupation }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Count -->
+        <div class="mt-4 text-sm text-gray-600">
+          {{ t('selectedCharacters') }}: {{ selectedCharacters.length }} / {{ allCharacters.length }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Chart and Report -->
+    <div class="lg:col-span-2">
+      <!-- Chart Settings -->
+      <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('summary') }}</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <!-- Chart Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Grafik Türü / Chart Type</label>
+            <select
+              [(ngModel)]="chartType"
+              (change)="onChartTypeChange()"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="pie">Pasta Grafik / Pie Chart</option>
+              <option value="bar">Çubuk Grafik / Bar Chart</option>
+              <option value="line">Çizgi Grafik / Line Chart</option>
+            </select>
+          </div>
+
+          <!-- Data Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Veri Türü / Data Type</label>
+            <select
+              [(ngModel)]="dataType"
+              (change)="onDataTypeChange()"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="species">{{ t('species') }}</option>
+              <option value="occupation">{{ t('occupation') }}</option>
+              <option value="planet">{{ t('planet') }}</option>
+              <option value="gender">{{ t('gender') }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="relative h-96 bg-gray-50 rounded-lg flex items-center justify-center">
+          <canvas
+            #chartCanvas
+            *ngIf="selectedCharacters.length > 0"
+            class="max-w-full max-h-full">
+          </canvas>
+          <div *ngIf="selectedCharacters.length === 0" class="text-gray-500 text-center">
+            <div class="text-4xl mb-2">📊</div>
+            <p>{{ t('noCharactersSelected') }}</p>
+          </div>
+        </div>
+
+        <!-- Generate Report Button -->
+        <div class="mt-6 text-center">
+          <button
+            (click)="generateReport()"
+            [disabled]="selectedCharacters.length === 0"
+            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
+            {{ t('generateReport') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Preview -->
+      <div *ngIf="reportGenerated && reportData" class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-semibold text-gray-800">{{ t('title') }}</h2>
+          <div class="flex gap-2">
+            <button
+              (click)="downloadPDF()"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+              {{ t('downloadPDF') }}
+            </button>
+            <button
+              (click)="downloadDOCX()"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+              {{ t('downloadDOCX') }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Report Content -->
+        <div #reportPreview class="bg-white p-8 border border-gray-200 rounded">
+          <!-- Report Header -->
+          <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">{{ t('title') }}</h1>
+            <p class="text-gray-600">{{ t('generatedAt') }}: {{ reportData.generatedAt | date:(language === 'tr' ? 'dd/MM/yyyy' : 'MM/dd/yyyy') }}</p>
+          </div>
+
+          <!-- Selected Characters Section -->
+          <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('selectedCharacters') }} ({{ selectedCharacters.length }})</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div *ngFor="let character of selectedCharacters" class="border border-gray-200 rounded p-4">
+                <div class="flex items-start gap-4">
+                  <img
+                    [src]="character.images['head-shot']"
+                    [alt]="character.name.first + ' ' + character.name.last"
+                    class="w-16 h-16 rounded-full object-cover"
+                    (error)="$any($event.target).src='https://via.placeholder.com/64x64?text=No+Image'">
+                  <div class="flex-1">
+                    <h3 class="font-semibold text-gray-800">{{ character.name.first }} {{ character.name.last }}</h3>
+                    <p class="text-sm text-gray-600">{{ t('species') }}: {{ character.species }}</p>
+                    <p class="text-sm text-gray-600">{{ t('occupation') }}: {{ character.occupation }}</p>
+                    <p class="text-sm text-gray-600">{{ t('planet') }}: {{ character.homePlanet }}</p>
+                    <p *ngIf="character.age" class="text-sm text-gray-600">{{ t('age') }}: {{ character.age }}</p>
+                    <p class="text-xs text-gray-500 mt-2 italic">{{ getCharacterAnalysis(character) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Analysis Section -->
+          <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('analysis') }}</h2>
+            <p class="text-gray-700 leading-relaxed">{{ generateAnalysisText() }}</p>
+          </div>
+
+          <!-- References Section -->
+          <div>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">{{ t('references') }}</h2>
+            <p class="text-sm text-gray-600">
+              Futurama Character Database. (2024). <em>Character Information</em>.
+              Retrieved from https://api.sampleapis.com/futurama/characters
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
