@@ -6,6 +6,18 @@ const routes: Routes = [
     path: 'characters',
     loadChildren: () => import('./features/characters/characters.module').then(m => m.CharactersModule)
   },
+  {
+    path: 'dashboard',
+    loadChildren: () => import('./features/dashboard/dashboard.module').then(m => m.DashboardModule)
+  },
+  {
+    path: 'analytics',
+    loadChildren: () => import('./features/analytics/analytics.module').then(m => m.AnalyticsModule)
+  },
+  {
+    path: 'reports',
+    loadChildren: () => import('./features/reports/reports.module').then(m => m.ReportsModule)
+  },
   { path: '', redirectTo: '/characters', pathMatch: 'full' }
 ];
 

@@ -23,7 +23,7 @@ export class SearchFilterComponent {
   genderFilter: string = '';
   speciesFilter: string = '';
 
-  genderOptions = ['Male', 'Female', 'Robot'];
+  genderOptions = ['Male', 'Female'];
   speciesOptions = ['Human', 'Robot', 'Mutant', 'Martian', 'Decapodian', 'Omicronian', 'Amphibiosans'];
   sortOptions = [
     { value: 'name', label: 'Name' },

@@ -1,1 +1,104 @@
-<p>analytics works!</p>
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-gray-800 mb-8">Analytics</h1>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center py-8">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && error"
+       class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{ error }}
+  </div>
+
+  <!-- Analytics Content -->
+  <div *ngIf="!loading && !error" class="space-y-6">
+    <!-- Controls -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Chart Type Selection -->
+        <div>
+          <label for="chartType" class="block text-sm font-medium text-gray-700 mb-2">
+            Grafik Türü
+          </label>
+          <select
+            id="chartType"
+            [(ngModel)]="selectedChartType"
+            (change)="onChartTypeChange()"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+            <option value="pie">Pasta Grafik</option>
+            <option value="bar">Çubuk Grafik</option>
+            <option value="line">Çizgi Grafik</option>
+          </select>
+        </div>
+
+        <!-- Data Type Selection -->
+        <div>
+          <label for="dataType" class="block text-sm font-medium text-gray-700 mb-2">
+            Veri Türü
+          </label>
+          <select
+            id="dataType"
+            [(ngModel)]="selectedDataType"
+            (change)="onDataTypeChange()"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+            <option value="gender">Cinsiyete Göre Dağılım</option>
+            <option value="species">Türlere Göre Dağılım</option>
+            <option value="occupation">Mesleklere Göre Karakter Sayısı</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">
+        {{ getDataTypeLabel() }} - {{ getChartTypeLabel() }}
+      </h2>
+      <div class="relative h-96 w-full">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="absolute inset-0 flex items-center justify-center bg-gray-50 rounded">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Grafik yükleniyor...</p>
+          </div>
+        </div>
+
+        <!-- Chart Canvas -->
+        <canvas #chartCanvas class="w-full h-full" [class.opacity-0]="loading"></canvas>
+
+        <!-- No Chart State -->
+        <div *ngIf="!chart && !loading && characters.length > 0"
+             class="absolute inset-0 flex items-center justify-center bg-gray-50 rounded">
+          <div class="text-center text-gray-500">
+            <p>Grafik hazırlanıyor...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Summary -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">İstatistik Özeti</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="text-center p-4 bg-blue-50 rounded-lg">
+          <p class="text-2xl font-bold text-blue-600">{{ characters.length }}</p>
+          <p class="text-sm text-gray-600">Toplam Karakter</p>
+        </div>
+        <div class="text-center p-4 bg-green-50 rounded-lg">
+          <p class="text-2xl font-bold text-green-600">
+            {{ getMaleCount() }}
+          </p>
+          <p class="text-sm text-gray-600">Erkek Karakter</p>
+        </div>
+        <div class="text-center p-4 bg-pink-50 rounded-lg">
+          <p class="text-2xl font-bold text-pink-600">
+            {{ getFemaleCount() }}
+          </p>
+          <p class="text-sm text-gray-600">Kadın Karakter</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
