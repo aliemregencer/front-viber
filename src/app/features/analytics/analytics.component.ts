@@ -1,6 +1,8 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CharacterService, Character } from '../../core/services/character.service';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 Chart.register(...registerables);
 
@@ -9,7 +11,7 @@ Chart.register(...registerables);
   templateUrl: './analytics.component.html',
   styleUrls: ['./analytics.component.css']
 })
-export class AnalyticsComponent implements OnInit, AfterViewInit {
+export class AnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
 
   characters: Character[] = [];
@@ -22,10 +24,19 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
   chart: Chart | null = null;
   chartInitialized = false;
 
+  private destroy$ = new Subject<void>();
+
   constructor(private characterService: CharacterService) {}
 
   ngOnInit() {
-    this.loadData();
+    this.subscribeToCharacterUpdates();
+    // Load characters initially
+    this.characterService.loadCharacters().subscribe({
+      error: (err) => {
+        this.error = err || 'Veri yüklenirken hata oluştu';
+        this.loading = false;
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -39,25 +50,54 @@ export class AnalyticsComponent implements OnInit, AfterViewInit {
     }
   }
 
-  loadData() {
-    this.loading = true;
-    this.characterService.loadCharacters().subscribe({
-      next: (data) => {
-        this.characters = data;
-        this.loading = false;
-        if (this.chartInitialized) {
-          // Small delay to ensure DOM is ready
-          setTimeout(() => {
-            this.updateChart();
-          }, 100);
+  subscribeToCharacterUpdates() {
+    // Subscribe to real-time character updates
+    this.characterService.characters$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.characters = data;
+          this.loading = false; // Set loading to false when we get data
+
+          if (this.chartInitialized && data.length > 0) {
+            // Update chart when characters change
+            setTimeout(() => {
+              this.updateChart();
+            }, 100);
+          }
         }
-      },
-      error: (err) => {
-        this.error = err || 'Veri yüklenirken hata oluştu';
-        this.loading = false;
-      }
-    });
+      });
+
+    // Subscribe to loading state
+    this.characterService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (isLoading) => {
+          this.loading = isLoading;
+        }
+      });
+
+    // Subscribe to error state
+    this.characterService.error$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (error) => {
+          this.error = error;
+        }
+      });
   }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    // Clean up chart
+    if (this.chart) {
+      this.chart.destroy();
+    }
+  }
+
+
 
   onChartTypeChange() {
     this.updateChart();

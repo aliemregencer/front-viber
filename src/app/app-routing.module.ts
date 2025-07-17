@@ -18,6 +18,10 @@ const routes: Routes = [
     path: 'reports',
     loadChildren: () => import('./features/reports/reports.module').then(m => m.ReportsModule)
   },
+  {
+    path: 'create-character',
+    loadChildren: () => import('./features/create-character/create-character.module').then(m => m.CreateCharacterModule)
+  },
   { path: '', redirectTo: '/characters', pathMatch: 'full' }
 ];
 

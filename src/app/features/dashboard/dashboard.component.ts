@@ -1,7 +1,9 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CharacterService, Character } from '../../core/services/character.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,10 +12,12 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   characters = signal<Character[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
+
+  private destroy$ = new Subject<void>();
 
   // Computed properties for dashboard statistics
   totalCharacters = computed(() => this.characters().length);
@@ -78,15 +82,47 @@ export class DashboardComponent implements OnInit {
   constructor(private characterService: CharacterService) {}
 
   ngOnInit() {
-    this.characterService.loadCharacters().subscribe({
-      next: (data) => {
-        this.characters.set(data);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set(err || 'Bilinmeyen hata');
-        this.loading.set(false);
-      }
-    });
+    // Subscribe to characters$ observable to get real-time updates
+    this.characterService.characters$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.characters.set(data);
+          this.loading.set(false);
+        }
+      });
+
+    // Subscribe to loading state
+    this.characterService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (isLoading) => {
+          this.loading.set(isLoading);
+        }
+      });
+
+    // Subscribe to error state
+    this.characterService.error$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (error) => {
+          this.error.set(error);
+        }
+      });
+
+    // Load characters initially
+    this.characterService.loadCharacters()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        error: (err) => {
+          this.error.set(err || 'Bilinmeyen hata');
+          this.loading.set(false);
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
